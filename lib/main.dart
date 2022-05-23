@@ -1,8 +1,13 @@
+import 'package:intl/intl.dart';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pagination/models/news.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+
+import 'package:flutter_news/utils/constant.dart';
+import 'package:flutter_news/models/news.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,46 +36,46 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   GlobalKey<ScaffoldState> globalKey = GlobalKey<ScaffoldState>();
 
-  final pagingController = PagingController<int, Article>(
+  PagingController<int, Article> pagingC = PagingController<int, Article>(
     firstPageKey: 1,
   );
 
   @override 
   void initState() {
     super.initState();
-    pagingController.addPageRequestListener((pageKey) {
-      fetchPage(pageKey);
+    pagingC.addPageRequestListener((pageKey) {
+      getNews(pageKey);
     });
   }
 
-  Future<void> fetchPage(int pageKey) async {
+  Future<void> getNews(int pageKey) async {
     try { 
       Dio dio = Dio();
-      Response res = await dio.get("https://newsapi.org/v2/top-headlines?country=us&apiKey=93173e715f5f414593ec9e4be79001c6&page=$pageKey");
+      Response res = await dio.get("https://newsapi.org/v2/top-headlines?country=id&apiKey=${AppConstants.newsKey}&page=$pageKey");
       Map<String, dynamic> data = res.data;
       NewsModel newsModel = NewsModel.fromJson(data);
       List<Article> articles = newsModel.articles!;
 
-      final previouslyFetchedItemsCount = pagingController.itemList?.length ?? 0;
+      final previouslyFetchedItemsCount = pagingC.itemList?.length ?? 0;
       
       final isLastPage = articles.length < previouslyFetchedItemsCount;
       final newItems = articles;
 
       if (isLastPage) {
-        pagingController.appendLastPage(newItems);
+        pagingC.appendLastPage(newItems);
       } else {
         final nextPageKey = pageKey + 1;
-        pagingController.appendPage(newItems, nextPageKey);
+        pagingC.appendPage(newItems, nextPageKey);
       }
-    } catch(e) {
-      pagingController.error = e;
-      debugPrint(e.toString());
+    } catch(e, stacktrace) {
+      debugPrint(stacktrace.toString());
+      pagingC.error = e;
     }
   }
 
   @override
   void dispose() {
-    pagingController.dispose();
+    pagingC.dispose();
     super.dispose();
   }
 
@@ -85,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
         color: Colors.black,
         onRefresh: () {
           return Future.sync(() {
-            pagingController.refresh();
+            pagingC.refresh();
           });
         },
         child: CustomScrollView(
@@ -93,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
           slivers: [
             const SliverAppBar(
               backgroundColor: Colors.white,
-              title: Text("News App",
+              title: Text("News",
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 14.0,
@@ -110,8 +115,9 @@ class _MyHomePageState extends State<MyHomePage> {
             SliverPadding(
               padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
               sliver: PagedSliverList.separated(
-                pagingController: pagingController,
-                separatorBuilder: (context, index) => const SizedBox(
+                pagingController: pagingC,
+                separatorBuilder: (BuildContext context, int i) => const Divider(
+                  thickness: 1.5,
                   height: 16.0,
                 ),
                 builderDelegate: PagedChildBuilderDelegate<Article>(
@@ -125,12 +131,50 @@ class _MyHomePageState extends State<MyHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(article.title!,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w500
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+
+                              Expanded(
+                                flex: 1,
+                                child: CachedNetworkImage(
+                                  imageUrl: article.urlToImage!,
+                                  imageBuilder: (BuildContext context, ImageProvider image) {
+                                    return CircleAvatar(
+                                      backgroundImage: image,
+                                      maxRadius: 30.0,
+                                    );
+                                  },
+                                ),
+                              ),
+                              
+                              Expanded(
+                                flex: 4,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(article.title!,
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.w500
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    Text(DateFormat.yMEd().format(article.publishedAt!),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 11.0,
+                                        fontWeight: FontWeight.w500
+                                      ),
+                                    ),
+                                  ],
+                                ) 
+                              ),
+
+
+                            ],
                           )
                         ],
                       ),
@@ -143,11 +187,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Colors.black
                     );
                   },
-                  firstPageErrorIndicatorBuilder: (context) => const Text("Error",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w500
+                  firstPageErrorIndicatorBuilder: (context) => const Center(
+                    child: Text("There was problem",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w500
+                      ),
                     ),
                   ),
                   newPageProgressIndicatorBuilder: (context) {
