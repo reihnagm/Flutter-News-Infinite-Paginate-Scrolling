@@ -43,7 +43,7 @@ class Article {
     title: json["title"],
     description: json["description"],
     url: json["url"],
-    urlToImage: json["urlToImage"],
+    urlToImage: json["urlToImage"] ?? "https://dinkes.dairikab.go.id/wp-content/uploads/sites/12/2022/03/default-img.gif",
     publishedAt: DateTime.parse(json["publishedAt"]),
     content: json["content"],
   );

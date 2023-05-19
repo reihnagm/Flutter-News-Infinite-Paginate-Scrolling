@@ -51,22 +51,23 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> getNews(int pageKey) async {
     try { 
       Dio dio = Dio();
-      Response res = await dio.get("https://newsapi.org/v2/top-headlines?country=id&apiKey=${AppConstants.newsKey}&page=$pageKey");
+      Response res = await dio.get("${AppConstants.baseUrl}?country=id&apiKey=${AppConstants.newsKey}&page=$pageKey");
       Map<String, dynamic> data = res.data;
       NewsModel newsModel = NewsModel.fromJson(data);
       List<Article> articles = newsModel.articles!;
 
-      final previouslyFetchedItemsCount = pagingC.itemList?.length ?? 0;
+      int previouslyFetchedItemsCount = pagingC.itemList?.length ?? 0;
       
-      final isLastPage = articles.length < previouslyFetchedItemsCount;
-      final newItems = articles;
+      bool isLastPage = articles.length < previouslyFetchedItemsCount;
+
+      List<Article> newItems = articles;
 
       if (isLastPage) {
         pagingC.appendLastPage(newItems);
       } else {
-        final nextPageKey = pageKey + 1;
-        pagingC.appendPage(newItems, nextPageKey);
+        pagingC.appendPage(newItems, pageKey + 1);
       }
+      
     } catch(e, stacktrace) {
       debugPrint(stacktrace.toString());
       pagingC.error = e;
@@ -96,13 +97,14 @@ class _MyHomePageState extends State<MyHomePage> {
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
+
             const SliverAppBar(
               backgroundColor: Colors.white,
               title: Text("News",
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w400
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600
                 ),
               ),
               pinned: true,
@@ -157,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Text(article.title!,
                                       style: const TextStyle(
                                         color: Colors.black,
-                                        fontSize: 14.0,
+                                        fontSize: 12.0,
                                         fontWeight: FontWeight.w500
                                       ),
                                     ),
@@ -165,14 +167,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Text(DateFormat.yMEd().format(article.publishedAt!),
                                       style: const TextStyle(
                                         color: Colors.grey,
-                                        fontSize: 11.0,
+                                        fontSize: 10.0,
                                         fontWeight: FontWeight.w500
                                       ),
                                     ),
                                   ],
                                 ) 
                               ),
-
 
                             ],
                           )
@@ -188,10 +189,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                   firstPageErrorIndicatorBuilder: (context) => const Center(
-                    child: Text("There was problem",
+                    child: Text("Oops! there was problem",
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 14.0,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.w500
                       ),
                     ),
@@ -205,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   noItemsFoundIndicatorBuilder: (context) =>  const Text("No items Found",
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 14.0,
+                      fontSize: 16.0,
                       fontWeight: FontWeight.w500
                     ),
                   ),
