@@ -1,3 +1,4 @@
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,8 +10,10 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:flutter_news/utils/constant.dart';
 import 'package:flutter_news/models/news.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  await initializeDateFormatting('id_ID', null).then((val) => {
+    runApp(const MyApp())
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -168,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ),
                                     const SizedBox(height: 8.0),
-                                    Text(DateFormat.yMEd().format(article.publishedAt!),
+                                    Text(DateFormat.yMEd('id_ID').format(article.publishedAt!),
                                       style: const TextStyle(
                                         color: Colors.grey,
                                         fontSize: 10.0,
