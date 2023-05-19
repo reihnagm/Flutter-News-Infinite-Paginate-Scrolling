@@ -82,6 +82,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    return buildUI();
+  }
+
+  Widget buildUI() {
     return Scaffold(
       key: globalKey,
       resizeToAvoidBottomInset: false,
@@ -189,7 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                   firstPageErrorIndicatorBuilder: (context) => const Center(
-                    child: Text("Oops! there was problem",
+                    child: Text("Oops! There was problem",
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 16.0,
