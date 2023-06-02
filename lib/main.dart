@@ -7,8 +7,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
-import 'package:flutter_news/utils/constant.dart';
-import 'package:flutter_news/models/news.dart';
+import 'package:news/utils/constant.dart';
+import 'package:news/models/news.dart';
 
 Future<void> main() async {
   await initializeDateFormatting('id_ID', null).then((val) => {
